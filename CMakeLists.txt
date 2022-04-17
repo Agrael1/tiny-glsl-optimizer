@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(GlslOptimizerV2 C CXX)
+set(CXX_STANDARD 20)
 
 file(GLOB_RECURSE PROJECT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
@@ -11,8 +12,14 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/*.c
 ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 
 
+add_definitions(-D_LIB)
 add_definitions(-DNOMINMAX)
 add_definitions(-D_USE_MATH_DEFINES)
+add_definitions(-D__STDC_NO_THREADS__)
+add_definitions(-D__STDC_VERSION__=199901L)
+add_definitions(-D__STDC_LIMIT_MACROS)
+add_definitions(-D__STDC_FORMAT_MACROS)
+add_definitions(-D__STDC_CONSTANT_MACROS)
 
 
 if(UNIX)
