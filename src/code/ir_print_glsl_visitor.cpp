@@ -1027,7 +1027,11 @@ IR_TO_GLSL::visit(ir_expression *ir)
 		ir->operands[2]->accept(this);
 		generated_source.append(", ");
 		ir->operands[1]->accept(this);
-		generated_source.append(", bvec%d(", ir->operands[1]->type->vector_elements);
+		auto x = ir->operands[1]->type->vector_elements;
+		if(ir->operands[1]->type->vector_elements > 1)
+			generated_source.append(", bvec%d(", ir->operands[1]->type->vector_elements);
+		else 
+			generated_source.append(", bool(");
 		ir->operands[0]->accept(this);
 		generated_source.append("))");
 	}
@@ -1053,7 +1057,24 @@ IR_TO_GLSL::visit(ir_expression *ir)
 		if (ir->type->is_vector() && (ir->operation >= ir_binop_less && ir->operation <= ir_binop_nequal))
 			generated_source.append("%s (", operator_vec_glsl_strs[ir->operation - ir_binop_less]);
 		else
+		{
+			if (ir->operation >= ir_binop_less && ir->operation <= ir_binop_nequal)
+			{
+				generated_source.append("(");
+				if (ir->operands[0])
+					ir->operands[0]->accept(this);
+
+				generated_source.append(" %s ", operator_glsl_strs[ir->operation]);
+
+				if (ir->operands[1])
+					ir->operands[1]->accept(this);
+				generated_source.append(")");
+				return;
+			}
 			generated_source.append("%s (", operator_glsl_strs[ir->operation]);
+		}
+
+		
 
 		if (ir->operands[0])
 			ir->operands[0]->accept(this);
