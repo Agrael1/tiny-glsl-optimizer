@@ -25,10 +25,10 @@
 #ifndef IR_PRINT_IR_VISITOR_H
 #define IR_PRINT_IR_VISITOR_H
 
+#include <string>
 #include "ir.h"
 #include "ir_visitor.h"
 #include "program/symbol_table.h"
-#include <string>
 #include "st_printf.h"
 
 class IR_TO_IR : public ir_visitor 

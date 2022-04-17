@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "glsl_parser_extras.h"
 #include "GlslConvert.h"
 
 #include <errno.h>
@@ -41,9 +40,9 @@
 #include "builtin_functions.h"
 #include "loop_analysis.h"
 
-#include "ir_print_ir_visitor.h"
+ //#include "ir_print_ir_visitor.h"
 #include "ir_print_glsl_visitor.h"
-#include "ir_builder_print_visitor.h"
+//#include "ir_builder_print_visitor.h"
 
 #include "string_to_uint_map.h"
 #include "linker.h"
@@ -76,7 +75,7 @@ bool GlslConvert::CreateGraph(
 	bool res = false;
 	if (vShaderSource.empty()) return res;
 
-	struct gl_shader *shader = rzalloc(NULL, struct gl_shader);
+	struct gl_shader* shader = rzalloc(NULL, struct gl_shader);
 
 	shader->Stage = (gl_shader_stage)vShaderType;
 	switch (shader->Stage)
@@ -108,18 +107,18 @@ bool GlslConvert::CreateGraph(
 	}
 
 	struct gl_context local_ctx;
-	struct gl_context *ctx = &local_ctx;
+	struct gl_context* ctx = &local_ctx;
 	InitContext(ctx, vTarget, vGLSLVersion);
 
 	ir_variable::temporaries_allocate_names = true;
 
 	std::string input = vShaderSource;
 
-	struct _mesa_glsl_parse_state *state
+	struct _mesa_glsl_parse_state* state
 		= new(shader) _mesa_glsl_parse_state(ctx, shader->Stage, shader);
 
 	shader->Source = input.c_str();
-	const char *source = shader->Source;
+	const char* source = shader->Source;
 
 	state->error = glcpp_preprocess(state, &source, &state->info_log, add_builtin_defines, state, ctx) != 0;
 
@@ -164,8 +163,8 @@ std::string GlslConvert::Optimize(
 {
 	std::string res;
 	if (vShaderSource.empty()) return res;
-	
-	struct gl_shader *shader = rzalloc(NULL, struct gl_shader);
+
+	struct gl_shader* shader = rzalloc(NULL, struct gl_shader);
 
 	shader->Stage = (gl_shader_stage)vShaderType;
 	switch (shader->Stage)
@@ -195,11 +194,11 @@ std::string GlslConvert::Optimize(
 	default:
 		break;
 	}
-	
+
 	vOptimizationStruct.stage = vShaderType;
 
 	struct gl_context local_ctx;
-	struct gl_context *ctx = &local_ctx;
+	struct gl_context* ctx = &local_ctx;
 	InitContext(ctx, vTarget, vGLSLVersion);
 
 	gl_shader_compiler_options compileOptions =
@@ -207,13 +206,13 @@ std::string GlslConvert::Optimize(
 	FillCompilerOptions(&compileOptions, &vOptimizationStruct);
 
 	ir_variable::temporaries_allocate_names = true;
-		
+
 	std::string input = vShaderSource;
 
-	struct _mesa_glsl_parse_state *state
+	struct _mesa_glsl_parse_state* state
 		= new(shader) _mesa_glsl_parse_state(ctx, shader->Stage, shader);
 
-	struct gl_shader_program *program = 0;
+	struct gl_shader_program* program = 0;
 
 	// si le format d'entréé est un ir
 	//shader->ir = new(shader) exec_list;
@@ -221,7 +220,7 @@ std::string GlslConvert::Optimize(
 	//_mesa_glsl_read_ir(state, shader->ir, input.c_str(), true);
 
 	shader->Source = input.c_str();
-	const char *source = shader->Source;
+	const char* source = shader->Source;
 
 	if (!(vOptimizationStruct.controlFlags & ControlFlags::CONTROL_SKIP_PREPROCESSING))
 	{
@@ -233,12 +232,12 @@ std::string GlslConvert::Optimize(
 		_mesa_glsl_lexer_ctor(state, source);
 		_mesa_glsl_parse(state);
 		_mesa_glsl_lexer_dtor(state);
-	
+
 		if (vLanguageTarget == LanguageTarget::LANGUAGE_TARGET_AST)
 		{
 			//https://stackoverflow.com/questions/7664788/freopen-stdout-and-console
 			/* Print out the initial AST */
-			FILE *fp = freopen("tmp_ast", "w", stdout);
+			FILE* fp = freopen("tmp_ast", "w", stdout);
 			if (fp)
 			{
 				foreach_list_typed(ast_node, ast, link, &state->translation_unit)
@@ -255,8 +254,8 @@ std::string GlslConvert::Optimize(
 			if (fp)
 			{
 #define MAX_LENGTH 1024
-				char *buffer = new char[MAX_LENGTH];
-				while (!feof(fp)) 
+				char* buffer = new char[MAX_LENGTH];
+				while (!feof(fp))
 				{
 					fgets(buffer, MAX_LENGTH, fp);
 					if (ferror(fp))
@@ -311,7 +310,7 @@ std::string GlslConvert::Optimize(
 						{
 							linked = true;
 
-							struct gl_shader_compiler_options *const compiler_options =
+							struct gl_shader_compiler_options* const compiler_options =
 								&ctx->Const.ShaderCompilerOptions[stage];
 
 							ir = program->_LinkedShaders[stage]->ir;
@@ -363,7 +362,7 @@ std::string GlslConvert::Optimize(
 				if (vLanguageTarget == LanguageTarget::LANGUAGE_TARGET_IR)
 				{
 					/* Print out the initial IR */
-					res = IR_TO_IR::Convert(ir, state, ralloc_strdup(shader, ""));
+					//res = IR_TO_IR::Convert(ir, state, ralloc_strdup(shader, ""));
 				}
 				else if (vLanguageTarget == LanguageTarget::LANGUAGE_TARGET_GLSL)
 				{
@@ -384,13 +383,13 @@ std::string GlslConvert::Optimize(
 				res = state->info_log;
 			}
 		}
-		
+
 	}
 	else
 	{
 		res = state->info_log;
 	}
-	
+
 	// free
 	if (program)
 	{
@@ -410,10 +409,10 @@ std::string GlslConvert::Optimize(
 ///////////////////////////////////////////////////////////////////////////////
 
 void GlslConvert::DO_Optimization_Pass(
-	struct exec_list *vIr,
+	struct exec_list* vIr,
 	bool linked,
-	gl_shader_compiler_options *vCompilerFlags,
-	OptimizationStruct *vOptimizationStruct)
+	gl_shader_compiler_options* vCompilerFlags,
+	OptimizationStruct* vOptimizationStruct)
 {
 #define OPT(FLAG, PASS, ...) do {																	\
 	if ((vOptimizationStruct->optimizationFlags & OptimizationFlags::FLAG))	\
@@ -430,15 +429,15 @@ void GlslConvert::DO_Optimization_Pass(
 	do {
 		progress = false;
 		++passes;
-		
+
 		if (vCompilerFlags && vOptimizationStruct)
 		{
-			OPT(OPT_lower_instructions, lower_instructions, 
+			OPT(OPT_lower_instructions, lower_instructions,
 				vIr, vOptimizationStruct->instructionToLowerFlags);
 			if (linked)
 			{
 				OPT(OPT_function_inlining, do_function_inlining, vIr);
-				OPT(OPT_dead_functions, do_dead_functions, vIr, 
+				OPT(OPT_dead_functions, do_dead_functions, vIr,
 					vOptimizationStruct->deadFunctionOptions.entryFunc.c_str());
 				OPT(OPT_structure_splitting, do_structure_splitting, vIr);
 			}
@@ -486,7 +485,7 @@ void GlslConvert::DO_Optimization_Pass(
 			{
 				if (vCompilerFlags->MaxUnrollIterations)
 				{
-					loop_state *ls = analyze_loop_variables(vIr);
+					loop_state* ls = analyze_loop_variables(vIr);
 					if (ls->loop_found)
 					{
 						bool loop_progress = unroll_loops(vIr, ls, vCompilerFlags);
@@ -509,8 +508,8 @@ void GlslConvert::DO_Optimization_Pass(
 							 *      (constant int (1)) ) )
 							 *   ))
 							 */
-							loop_progress |= do_lower_jumps(vIr, 
-								true, 
+							loop_progress |= do_lower_jumps(vIr,
+								true,
 								true,
 								vCompilerFlags->EmitNoMainReturn,
 								vCompilerFlags->EmitNoCont,
@@ -525,8 +524,8 @@ void GlslConvert::DO_Optimization_Pass(
 			if (OPT_FLAGS(vOptimizationStruct->optimizationFlags, OPT_lower_if_to_cond_assign))
 			{
 				gl_shader_stage stage = (gl_shader_stage)vOptimizationStruct->stage;
-				progress |= lower_if_to_cond_assign(stage, vIr, 
-					vOptimizationStruct->lowerIfToCondAssignOptions.max_depth, 
+				progress |= lower_if_to_cond_assign(stage, vIr,
+					vOptimizationStruct->lowerIfToCondAssignOptions.max_depth,
 					vOptimizationStruct->lowerIfToCondAssignOptions.min_branch_cost);
 			}
 			OPT(OPT_mat_op_to_vec, do_mat_op_to_vec, vIr);
@@ -538,9 +537,9 @@ void GlslConvert::DO_Optimization_Pass(
 				gl_shader_stage stage = (gl_shader_stage)vOptimizationStruct->stage;
 				progress |= lower_variable_index_to_cond_assign(
 					stage, vIr,
-					vOptimizationStruct->lowerVariableIndexToCondAssignOptions.lower_input, 
+					vOptimizationStruct->lowerVariableIndexToCondAssignOptions.lower_input,
 					vOptimizationStruct->lowerVariableIndexToCondAssignOptions.lower_output,
-					vOptimizationStruct->lowerVariableIndexToCondAssignOptions.lower_temp, 
+					vOptimizationStruct->lowerVariableIndexToCondAssignOptions.lower_temp,
 					vOptimizationStruct->lowerVariableIndexToCondAssignOptions.lower_uniform);
 			}
 			OPT(OPT_lower_quadop_vector, lower_quadop_vector, vIr, vOptimizationStruct->lowerQuadopVector.dont_lower_swz);
@@ -555,7 +554,7 @@ void GlslConvert::DO_Optimization_Pass(
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-static void init_gl_program(struct gl_program *prog, bool is_arb_asm, GLenum target)
+static void init_gl_program(struct gl_program* prog, bool is_arb_asm, GLenum target)
 {
 	prog->RefCount = 1;
 	prog->Format = GL_PROGRAM_FORMAT_ASCII_ARB;
@@ -563,7 +562,7 @@ static void init_gl_program(struct gl_program *prog, bool is_arb_asm, GLenum tar
 	prog->info.stage = (gl_shader_stage)_mesa_program_enum_to_shader_stage(target);
 }
 
-static struct gl_program* new_program(UNUSED struct gl_context *ctx, GLenum target,
+static struct gl_program* new_program(UNUSED struct gl_context* ctx, GLenum target,
 	UNUSED GLuint id, bool is_arb_asm)
 {
 	switch (target) {
@@ -573,7 +572,7 @@ static struct gl_program* new_program(UNUSED struct gl_context *ctx, GLenum targ
 	case GL_TESS_EVALUATION_PROGRAM_NV:
 	case GL_FRAGMENT_PROGRAM_ARB:
 	case GL_COMPUTE_PROGRAM_NV: {
-		struct gl_program *prog = rzalloc(NULL, struct gl_program);
+		struct gl_program* prog = rzalloc(NULL, struct gl_program);
 		init_gl_program(prog, is_arb_asm, target);
 		return prog;
 	}
@@ -583,7 +582,7 @@ static struct gl_program* new_program(UNUSED struct gl_context *ctx, GLenum targ
 	}
 }
 
-void GlslConvert::InitContext(struct gl_context *ctx, ApiTarget api, int vGlslVersion)
+void GlslConvert::InitContext(struct gl_context* ctx, ApiTarget api, int vGlslVersion)
 {
 	gl_api glApi;
 	if (vGlslVersion == 100 || vGlslVersion == 300)
@@ -809,18 +808,18 @@ void GlslConvert::InitContext(struct gl_context *ctx, ApiTarget api, int vGlslVe
 	//ctx->Driver.DeleteProgram = 0;
 }
 
-void GlslConvert::ClearContext(struct gl_context *ctx)
+void GlslConvert::ClearContext(struct gl_context* ctx)
 {
 	_mesa_glsl_builtin_functions_decref();
 }
 
-struct gl_shader_program* GlslConvert::GetProgramFromShader(struct gl_context *ctx, struct gl_shader *shader)
+struct gl_shader_program* GlslConvert::GetProgramFromShader(struct gl_context* ctx, struct gl_shader* shader)
 {
-	struct gl_shader_program *whole_program = 0;
+	struct gl_shader_program* whole_program = 0;
 
 	if (!ctx) return whole_program;
 	if (!shader) return whole_program;
-	
+
 	whole_program = rzalloc(NULL, struct gl_shader_program);
 	assert(whole_program != NULL);
 	whole_program->data = rzalloc(whole_program, struct gl_shader_program_data);
@@ -835,12 +834,12 @@ struct gl_shader_program* GlslConvert::GetProgramFromShader(struct gl_context *c
 	// attach
 	whole_program->Shaders =
 		reralloc(whole_program, whole_program->Shaders,
-			struct gl_shader *, whole_program->NumShaders + 1);
+			struct gl_shader*, whole_program->NumShaders + 1);
 	assert(whole_program->Shaders != NULL);
 
 	whole_program->Shaders[whole_program->NumShaders] = shader;
 	whole_program->NumShaders++;
-	
+
 	return whole_program;
 }
 
@@ -848,7 +847,7 @@ struct gl_shader_program* GlslConvert::GetProgramFromShader(struct gl_context *c
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void GlslConvert::FillCompilerOptions(gl_shader_compiler_options *vCompileOptions, OptimizationStruct *vOptimizationStruct)
+void GlslConvert::FillCompilerOptions(gl_shader_compiler_options* vCompileOptions, OptimizationStruct* vOptimizationStruct)
 {
 	if (vCompileOptions && vOptimizationStruct)
 	{
