@@ -228,9 +228,9 @@ public:
 	};
 
 public:
-	static GlslConvert* Instance()
+	static GlslConvert& Instance()
 	{
-		static GlslConvert *_instance = new GlslConvert();
+		static GlslConvert _instance;
 		return _instance;
 	}
 
