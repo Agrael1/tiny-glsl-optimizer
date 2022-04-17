@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <optional>
+
 #include "GlslConvert.h"
 
 #include <errno.h>
@@ -165,7 +167,6 @@ std::string GlslConvert::Optimize(
 	if (vShaderSource.empty()) return res;
 
 	struct gl_shader* shader = rzalloc(NULL, struct gl_shader);
-
 	shader->Stage = (gl_shader_stage)vShaderType;
 	switch (shader->Stage)
 	{
@@ -319,7 +320,8 @@ std::string GlslConvert::Optimize(
 						{
 							linked = false;
 
-							res = program->data->InfoLog;
+							log = program->data->InfoLog;
+							failed = true;
 						}
 					}
 
@@ -380,14 +382,16 @@ std::string GlslConvert::Optimize(
 			}
 			else
 			{
-				res = state->info_log;
+				log = state->info_log;
+				failed = true;
 			}
 		}
 
 	}
 	else
 	{
-		res = state->info_log;
+		log = state->info_log;
+		failed = true;
 	}
 
 	// free

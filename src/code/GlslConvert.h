@@ -16,10 +16,10 @@
 
 #pragma once
 
-#include "compiler/shader_enums.h"
 #include <string>
 #include <map>
 #include <functional>
+#include "compiler/shader_enums.h"
 
 struct exec_list;
 struct gl_context;
@@ -255,7 +255,14 @@ public:
 		LanguageTarget vLanguageTarget, 
 		int vGLSLVersion, 
 		OptimizationStruct vOptimisationStruct);
-
+	std::string GetLog()noexcept
+	{
+		return std::move(log);
+	}
+	bool Failed()const noexcept
+	{
+		return failed;
+	}
 private:
 	void DO_Optimization_Pass(
 		struct exec_list *vIr, 
@@ -270,4 +277,6 @@ public:
 
 private:
 	void FillCompilerOptions(gl_shader_compiler_options *vCompileOptions, OptimizationStruct *vOptimizationStruct);
+	std::string log;
+	bool failed = false;
 };

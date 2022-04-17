@@ -19,8 +19,22 @@ enum class xApiTarget
 	API_OPENGL_CORE
 };
 
-std::string Optimize(
-	std::string vShaderSource,
-	xShaderStage vShaderType,
-	int vGLSLVersion);
+class GlslConvert;
+
+struct Optimizer
+{
+public:
+	Optimizer();
+public:
+	std::string Optimize(
+		std::string vShaderSource,
+		xShaderStage vShaderType,
+		int vGLSLVersion);
+	bool Failed()const noexcept;
+	std::string GetLog();
+private:
+	GlslConvert& instance;
+};
+
+
 
