@@ -43,17 +43,17 @@ static int tex_sampler_dim_size[tex_sampler_type_count] = {
 };
 
 static void print_texlod_workarounds(
-	int usage_bitfield, 
-	int usage_proj_bitfield, 
-	sbuffer &str)
+	int usage_bitfield,
+	int usage_proj_bitfield,
+	sbuffer& str)
 {
-	static const char *precStrings[3] = { "lowp", "mediump", "highp" };
-	static const char *precNameStrings[3] = { "low_", "medium_", "high_" };
+	static const char* precStrings[3] = { "lowp", "mediump", "highp" };
+	static const char* precNameStrings[3] = { "low_", "medium_", "high_" };
 	// Print out the texlod workarounds
 	for (int prec = 0; prec < 3; prec++)
 	{
-		const char *precString = precStrings[prec];
-		const char *precName = precNameStrings[prec];
+		const char* precString = precStrings[prec];
+		const char* precName = precNameStrings[prec];
 
 		for (int dim = 0; dim < tex_sampler_type_count; dim++)
 		{
@@ -96,7 +96,7 @@ static void print_texlod_workarounds(
 	}
 }
 
-void IR_TO_GLSL::print_type(sbuffer& str, const glsl_type *t, bool arraySize)
+void IR_TO_GLSL::print_type(sbuffer& str, const glsl_type* t, bool arraySize)
 {
 	if (t->is_array())
 	{
@@ -106,7 +106,7 @@ void IR_TO_GLSL::print_type(sbuffer& str, const glsl_type *t, bool arraySize)
 	}
 	else if ((t->is_struct()) && !is_gl_identifier(t->name))
 	{
-		str.append("%s", t->name, (void *)t);
+		str.append("%s", t->name, (void*)t);
 	}
 	else
 	{
@@ -114,7 +114,7 @@ void IR_TO_GLSL::print_type(sbuffer& str, const glsl_type *t, bool arraySize)
 	}
 }
 
-void IR_TO_GLSL::print_type_post(sbuffer& str, const glsl_type *t, bool arraySize)
+void IR_TO_GLSL::print_type_post(sbuffer& str, const glsl_type* t, bool arraySize)
 {
 	if (t->base_type == GLSL_TYPE_ARRAY)
 	{
@@ -124,8 +124,8 @@ void IR_TO_GLSL::print_type_post(sbuffer& str, const glsl_type *t, bool arraySiz
 }
 
 std::string IR_TO_GLSL::Convert(
-	exec_list *instructions, 
-	struct _mesa_glsl_parse_state *state, 
+	exec_list* instructions,
+	struct _mesa_glsl_parse_state* state,
 	char* generated_source)
 {
 	sbuffer res(generated_source);
@@ -152,8 +152,8 @@ std::string IR_TO_GLSL::Convert(
 		{
 			if (state->EXT_draw_buffers_enable)
 				res.append("#extension GL_EXT_draw_buffers : enable\n");
-		//	if (state->EXT_draw_instanced_enable)
-		//		str.append("#extension GL_EXT_draw_instanced : enable\n");
+			//	if (state->EXT_draw_instanced_enable)
+			//		str.append("#extension GL_EXT_draw_instanced : enable\n");
 		}
 		if (state->EXT_shader_framebuffer_fetch_enable)
 			res.append("#extension GL_EXT_shader_framebuffer_fetch : enable\n");
@@ -161,19 +161,19 @@ std::string IR_TO_GLSL::Convert(
 			res.append("#extension GL_ARB_shader_bit_encoding : enable\n");
 		if (state->EXT_texture_array_enable)
 			res.append("#extension GL_EXT_texture_array : enable\n");
-		
+
 		for (unsigned i = 0; i < state->num_user_structures; i++)
 		{
-			const glsl_type *const s = state->user_structures[i];
-			res.append("(structure (%s) (%s@%p) (%u) (\n",
-				s->name, s->name, (void *)s, s->length);
+			const glsl_type* const s = state->user_structures[i];
+			res.append("struct %s {\n",
+				s->name);
 			for (unsigned j = 0; j < s->length; j++)
 			{
-				res.append("\t((");
+				res.append("\t");
 				print_type(res, s->fields.structure[j].type, false);
-				res.append(")(%s))\n", s->fields.structure[j].name);
+				res.append(" %s;\n", s->fields.structure[j].name);
 			}
-			res.append(")\n");
+			res.append("};\n");
 		}
 	}
 
@@ -187,13 +187,13 @@ std::string IR_TO_GLSL::Convert(
 		{
 			if (ir->ir_type == ir_type_variable)
 			{
-				ir_variable *var = static_cast<ir_variable*>(ir);
+				ir_variable* var = static_cast<ir_variable*>(ir);
 				if ((strstr(var->name, "gl_") == var->name)
 					&& !var->data.invariant)
 					continue;
 			}
 
-			ir_instruction *deconsted = const_cast<ir_instruction *>(ir);
+			ir_instruction* deconsted = const_cast<ir_instruction*>(ir);
 
 			IR_TO_GLSL v(res, &global, state);
 			v.loopstate = ls;
@@ -208,7 +208,7 @@ std::string IR_TO_GLSL::Convert(
 
 		delete ls;
 	}
-	
+
 	print_texlod_workarounds(uses_texlod_impl, uses_texlodproj_impl, res);
 
 	return std::string(res.c_str());
@@ -218,7 +218,7 @@ IR_TO_GLSL::IR_TO_GLSL(
 	sbuffer& str,
 	global_print_tracker* vGlobals,
 	const _mesa_glsl_parse_state* vState)
-		: generated_source(str), global(vGlobals), state(vState)
+	: generated_source(str), global(vGlobals), state(vState)
 {
 	printable_names = _mesa_pointer_hash_table_create(NULL);
 	symbols = _mesa_symbol_table_ctor();
@@ -232,7 +232,7 @@ IR_TO_GLSL::~IR_TO_GLSL()
 	ralloc_free(mem_ctx);
 }
 
-void 
+void
 IR_TO_GLSL::indent(void)
 {
 	if (previous_skipped)
@@ -242,7 +242,7 @@ IR_TO_GLSL::indent(void)
 		generated_source.append("  ");
 }
 
-void 
+void
 IR_TO_GLSL::end_statement_line()
 {
 	if (!skipped_this_ir)
@@ -251,7 +251,7 @@ IR_TO_GLSL::end_statement_line()
 	skipped_this_ir = false;
 }
 
-void 
+void
 IR_TO_GLSL::newline_indent()
 {
 	if (expression_depth % 8 == 0)
@@ -262,7 +262,7 @@ IR_TO_GLSL::newline_indent()
 	}
 }
 
-void 
+void
 IR_TO_GLSL::newline_deindent()
 {
 	if (expression_depth % 8 == 0)
@@ -273,10 +273,10 @@ IR_TO_GLSL::newline_deindent()
 	}
 }
 
-void 
+void
 IR_TO_GLSL::print_var_name(ir_variable* v)
 {
-	hash_entry *entry = _mesa_hash_table_search(global->var_hash, v);
+	hash_entry* entry = _mesa_hash_table_search(global->var_hash, v);
 	if (entry)
 	{
 		long id = (long)entry->data;
@@ -303,56 +303,56 @@ IR_TO_GLSL::print_var_name(ir_variable* v)
 	}
 }
 
-const char *
-IR_TO_GLSL::unique_name(ir_variable *v)
+const char*
+IR_TO_GLSL::unique_name(ir_variable* v)
 {
-   /* var->name can be NULL in function prototypes when a type is given for a
-    * parameter but no name is given.  In that case, just return an empty
-    * string.  Don't worry about tracking the generated name in the printable
-    * names hash because this is the only scope where it can ever appear.
-    */
-   if (v->name == NULL) 
-   {
-      static unsigned arg = 1;
-      return ralloc_asprintf(this->mem_ctx, "parameter@%u", arg++);
-   }
+	/* var->name can be NULL in function prototypes when a type is given for a
+	 * parameter but no name is given.  In that case, just return an empty
+	 * string.  Don't worry about tracking the generated name in the printable
+	 * names hash because this is the only scope where it can ever appear.
+	 */
+	if (v->name == NULL)
+	{
+		static unsigned arg = 1;
+		return ralloc_asprintf(this->mem_ctx, "parameter@%u", arg++);
+	}
 
-   /* Do we already have a name for this variable? */
-   struct hash_entry *entry =
-	   _mesa_hash_table_search(this->printable_names, v);
+	/* Do we already have a name for this variable? */
+	struct hash_entry* entry =
+		_mesa_hash_table_search(this->printable_names, v);
 
-   if (entry != NULL)
-   {
-	   return (const char *)entry->data;
-   }
+	if (entry != NULL)
+	{
+		return (const char*)entry->data;
+	}
 
-   const char* name = NULL;
+	const char* name = NULL;
 
-   /* If there's no conflict, just use the original name */
-   if (_mesa_symbol_table_find_symbol(this->symbols, v->name) == NULL)
-   {
-	   name = v->name;
-   }
-   else
-   {
-	   static unsigned i = 1;
-	   name = ralloc_asprintf(this->mem_ctx, "%s@%u", v->name, ++i);
-   }
+	/* If there's no conflict, just use the original name */
+	if (_mesa_symbol_table_find_symbol(this->symbols, v->name) == NULL)
+	{
+		name = v->name;
+	}
+	else
+	{
+		static unsigned i = 1;
+		name = ralloc_asprintf(this->mem_ctx, "%s@%u", v->name, ++i);
+	}
 
-   _mesa_hash_table_insert(this->printable_names, v, (void *)name);
-   _mesa_symbol_table_add_symbol(this->symbols, name, v);
-    
-   return name;
+	_mesa_hash_table_insert(this->printable_names, v, (void*)name);
+	_mesa_symbol_table_add_symbol(this->symbols, name, v);
+
+	return name;
 }
 
-void 
-IR_TO_GLSL::visit(ir_rvalue *)
+void
+IR_TO_GLSL::visit(ir_rvalue*)
 {
-   generated_source.append("error");
+	generated_source.append("error");
 }
 
-void 
-IR_TO_GLSL::visit(ir_variable *ir)
+void
+IR_TO_GLSL::visit(ir_variable* ir)
 {
 	char binding[32] = { 0 };
 	if (ir->data.binding)
@@ -379,7 +379,7 @@ IR_TO_GLSL::visit(ir_variable *ir)
 	// function that is not an uniform
 	if (this->mode == 0 && ir->data.mode != ir_var_uniform)
 	{
-		hash_entry *entry = _mesa_hash_table_search(global->var_hash, ir);
+		hash_entry* entry = _mesa_hash_table_search(global->var_hash, ir);
 		if (entry == 0)
 		{
 			long id = ++global->var_counter;
@@ -391,7 +391,7 @@ IR_TO_GLSL::visit(ir_variable *ir)
 	// (will be printed inside loop body)
 	if (!inside_loop_body)
 	{
-		ir_loop *lo = ir->as_loop();
+		ir_loop* lo = ir->as_loop();
 		if (lo)
 		{
 			loop_variable_state* inductor_state = loopstate->get(lo);
@@ -427,27 +427,27 @@ IR_TO_GLSL::visit(ir_variable *ir)
 			ir->data.image_format);
 	}
 
-	const char *const cent = (ir->data.centroid) ? "centroid " : "";
-	const char *const samp = (ir->data.sample) ? "sample " : "";
-	const char *const patc = (ir->data.patch) ? "patch " : "";
-	const char *const inv = (ir->data.invariant) ? "invariant " : "";
-	const char *const explicit_inv = (ir->data.explicit_invariant) ? "explicit_invariant " : "";
-	const char *const prec = (ir->data.precise) ? "precise " : "";
-	const char *const bindless = (ir->data.bindless) ? "bindless " : "";
-	const char *const bound = (ir->data.bound) ? "bound " : "";
-	const char *const memory_read_only = (ir->data.memory_read_only) ? "readonly " : "";
-	const char *const memory_write_only = (ir->data.memory_write_only) ? "writeonly " : "";
-	const char *const memory_coherent = (ir->data.memory_coherent) ? "coherent " : "";
-	const char *const memory_volatile = (ir->data.memory_volatile) ? "volatile " : "";
-	const char *const memory_restrict = (ir->data.memory_restrict) ? "restrict " : "";
-	const char *const mode[3][ir_var_mode_count] =
+	const char* const cent = (ir->data.centroid) ? "centroid " : "";
+	const char* const samp = (ir->data.sample) ? "sample " : "";
+	const char* const patc = (ir->data.patch) ? "patch " : "";
+	const char* const inv = (ir->data.invariant) ? "invariant " : "";
+	const char* const explicit_inv = (ir->data.explicit_invariant) ? "explicit_invariant " : "";
+	const char* const prec = (ir->data.precise) ? "precise " : "";
+	const char* const bindless = (ir->data.bindless) ? "bindless " : "";
+	const char* const bound = (ir->data.bound) ? "bound " : "";
+	const char* const memory_read_only = (ir->data.memory_read_only) ? "readonly " : "";
+	const char* const memory_write_only = (ir->data.memory_write_only) ? "writeonly " : "";
+	const char* const memory_coherent = (ir->data.memory_coherent) ? "coherent " : "";
+	const char* const memory_volatile = (ir->data.memory_volatile) ? "volatile " : "";
+	const char* const memory_restrict = (ir->data.memory_restrict) ? "restrict " : "";
+	const char* const mode[3][ir_var_mode_count] =
 	{
 		{ "", "uniform ", "shader_storage", "shader_shared", "in ",        "out ",     "in ", "out ", "inout ", "const_in ", "sys ", "" },
 		{ "", "uniform ", "shader_storage", "shader_shared", "attribute ", "varying ", "in ", "out ", "inout ", "const_in ", "sys ", "" },
 		{ "", "uniform ", "shader_storage", "shader_shared", "varying ",   "out ",     "in ", "out ", "inout ", "const_in ", "sys ", "" }
 	};
-	const char *const precision[] = { "", "highp ", "mediump ", "lowp " };
-	const char *const interp[] = { "", "smooth ", "flat ", "noperspective " };
+	const char* const precision[] = { "", "highp ", "mediump ", "lowp " };
+	const char* const interp[] = { "", "smooth ", "flat ", "noperspective " };
 	STATIC_ASSERT(ARRAY_SIZE(interp) == INTERP_MODE_COUNT);
 
 	// keep invariant declaration for builtin variables
@@ -483,71 +483,71 @@ IR_TO_GLSL::visit(ir_variable *ir)
 	}
 }
 
-void 
-IR_TO_GLSL::visit(ir_function_signature *ir)
+void
+IR_TO_GLSL::visit(ir_function_signature* ir)
 {
-   _mesa_symbol_table_push_scope(symbols);
+	_mesa_symbol_table_push_scope(symbols);
 
-   print_type(generated_source, ir->return_type, true);
-   generated_source.append(" %s(", ir->function_name());
-   
-   if (!ir->parameters.is_empty())
-   {
-	   previous_skipped = false;
-	   bool first = true;
-	   foreach_in_list(ir_variable, inst, &ir->parameters) 
-	   {
-		   if (!first)
-			   generated_source.append(", ");
-		   indent();
-		   inst->accept(this);
-		   first = false;
-	   }
-	   indent();
-   }
+	print_type(generated_source, ir->return_type, true);
+	generated_source.append(" %s(", ir->function_name());
 
-   if (ir->body.is_empty())
-   {
-	   generated_source.append(");\n");
-	   return;
-   }
+	if (!ir->parameters.is_empty())
+	{
+		previous_skipped = false;
+		bool first = true;
+		foreach_in_list(ir_variable, inst, &ir->parameters)
+		{
+			if (!first)
+				generated_source.append(", ");
+			indent();
+			inst->accept(this);
+			first = false;
+		}
+		indent();
+	}
 
-   generated_source.append(")\n");
+	if (ir->body.is_empty())
+	{
+		generated_source.append(");\n");
+		return;
+	}
 
-   indent();
-   generated_source.append("{\n");
-   indentation++;
-   previous_skipped = false;
+	generated_source.append(")\n");
 
-   // insert postponed global assigments
-   if (strcmp(ir->function()->name, "main") == 0)
-   {
-	   assert(!global->main_function_done);
-	   global->main_function_done = true;
-	   foreach_in_list(ga_entry, node, &global->global_assignements)
-	   {
-		   ir_instruction* as = node->ir;
-		   as->accept(this);
-		   generated_source.append(";\n");
-	   }
-   }
+	indent();
+	generated_source.append("{\n");
+	indentation++;
+	previous_skipped = false;
 
-   foreach_in_list(ir_instruction, inst, &ir->body) 
-   {
-      indent();
-      inst->accept(this);
-	  end_statement_line();
-   }
+	// insert postponed global assigments
+	if (strcmp(ir->function()->name, "main") == 0)
+	{
+		assert(!global->main_function_done);
+		global->main_function_done = true;
+		foreach_in_list(ga_entry, node, &global->global_assignements)
+		{
+			ir_instruction* as = node->ir;
+			as->accept(this);
+			generated_source.append(";\n");
+		}
+	}
 
-   indentation--;
-   indent();
-   generated_source.append("}\n");
+	foreach_in_list(ir_instruction, inst, &ir->body)
+	{
+		indent();
+		inst->accept(this);
+		end_statement_line();
+	}
 
-   _mesa_symbol_table_pop_scope(symbols);
+	indentation--;
+	indent();
+	generated_source.append("}\n");
+
+	_mesa_symbol_table_pop_scope(symbols);
 }
 
-void 
-IR_TO_GLSL::visit(ir_function *ir)
+void
+IR_TO_GLSL::visit(ir_function* ir)
 {
 	bool found_non_builtin_proto = false;
 	foreach_in_list(ir_function_signature, sig, &ir->signatures)
@@ -561,7 +561,7 @@ IR_TO_GLSL::visit(ir_function *ir)
 	int oldMode = this->mode;
 	this->mode = 0;
 
-	foreach_in_list(ir_function_signature, sig, &ir->signatures) 
+	foreach_in_list(ir_function_signature, sig, &ir->signatures)
 	{
 		indent();
 		sig->accept(this);
@@ -573,7 +573,7 @@ IR_TO_GLSL::visit(ir_function *ir)
 	indent();
 }
 
-const char *const operator_glsl_strs[] = {
+const char* const operator_glsl_strs[] = {
    "~",
    "!",
    "-", //neg
@@ -718,7 +718,7 @@ const char *const operator_glsl_strs[] = {
    "vector_TODO",
 };
 
-const char *const operator_glsl_enum_strs[] = {
+const char* const operator_glsl_enum_strs[] = {
    "bit_not",
    "logic_not",
    "neg",
@@ -973,7 +973,7 @@ const char *const operator_glsl_enum_strs[] = {
 };
 */
 
-static const char *const operator_vec_glsl_strs[] = {
+static const char* const operator_vec_glsl_strs[] = {
 	"lessThan",
 	"greaterThan",
 	"lessThanEqual",
@@ -996,13 +996,13 @@ static bool is_binop_func_like(ir_expression_operation op, const glsl_type* type
 	return false;
 }
 
-void 
-IR_TO_GLSL::visit(ir_expression *ir)
+void
+IR_TO_GLSL::visit(ir_expression* ir)
 {
 	expression_depth++;
 	newline_indent();
 
-	if (ir->num_operands == 1) 
+	if (ir->num_operands == 1)
 	{
 		if (ir->operation >= ir_unop_f2i && ir->operation <= ir_unop_u2i) {
 			print_type(generated_source, ir->type, true);
@@ -1028,9 +1028,9 @@ IR_TO_GLSL::visit(ir_expression *ir)
 		generated_source.append(", ");
 		ir->operands[1]->accept(this);
 		auto x = ir->operands[1]->type->vector_elements;
-		if(ir->operands[1]->type->vector_elements > 1)
+		if (ir->operands[1]->type->vector_elements > 1)
 			generated_source.append(", bvec%d(", ir->operands[1]->type->vector_elements);
-		else 
+		else
 			generated_source.append(", bool(");
 		ir->operands[0]->accept(this);
 		generated_source.append("))");
@@ -1074,7 +1074,7 @@ IR_TO_GLSL::visit(ir_expression *ir)
 			generated_source.append("%s (", operator_glsl_strs[ir->operation]);
 		}
 
-		
+
 
 		if (ir->operands[0])
 			ir->operands[0]->accept(this);
@@ -1116,8 +1116,8 @@ IR_TO_GLSL::visit(ir_expression *ir)
 	expression_depth--;
 }
 
-void 
-IR_TO_GLSL::visit(ir_texture *ir)
+void
+IR_TO_GLSL::visit(ir_texture* ir)
 {
 	glsl_sampler_dim sampler_dim = (glsl_sampler_dim)ir->sampler->type->sampler_dimensionality;
 	const bool is_shadow = ir->sampler->type->sampler_shadow;
@@ -1266,8 +1266,8 @@ IR_TO_GLSL::visit(ir_texture *ir)
 	}
 }
 
-void 
-IR_TO_GLSL::visit(ir_swizzle *ir)
+void
+IR_TO_GLSL::visit(ir_swizzle* ir)
 {
 	const unsigned swiz[4] = {
 	   ir->mask.x,
@@ -1311,15 +1311,15 @@ IR_TO_GLSL::visit(ir_swizzle *ir)
 	}
 }
 
-void 
-IR_TO_GLSL::visit(ir_dereference_variable *ir)
+void
+IR_TO_GLSL::visit(ir_dereference_variable* ir)
 {
-	ir_variable *var = ir->variable_referenced();
+	ir_variable* var = ir->variable_referenced();
 	print_var_name(var);
 }
 
-void 
-IR_TO_GLSL::visit(ir_dereference_array *ir)
+void
+IR_TO_GLSL::visit(ir_dereference_array* ir)
 {
 	ir->array->accept(this);
 	generated_source.append("[");
@@ -1327,17 +1327,17 @@ IR_TO_GLSL::visit(ir_dereference_array *ir)
 	generated_source.append("]");
 }
 
-void 
-IR_TO_GLSL::visit(ir_dereference_record *ir)
+void
+IR_TO_GLSL::visit(ir_dereference_record* ir)
 {
-   ir->record->accept(this);
+	ir->record->accept(this);
 
-   const char *field_name =
-      ir->record->type->fields.structure[ir->field_idx].name;
-   generated_source.append(".%s ", field_name);
+	const char* field_name =
+		ir->record->type->fields.structure[ir->field_idx].name;
+	generated_source.append(".%s ", field_name);
 }
 
-bool 
+bool
 IR_TO_GLSL::try_print_array_assignment(ir_dereference* lhs, ir_rvalue* rhs)
 {
 	if (this->state->language_version >= 120)
@@ -1367,7 +1367,7 @@ IR_TO_GLSL::try_print_array_assignment(ir_dereference* lhs, ir_rvalue* rhs)
 	return true;
 }
 
-void 
+void
 IR_TO_GLSL::emit_assignment_part(ir_dereference* lhs, ir_rvalue* rhs, unsigned write_mask, ir_rvalue* dstIndex)
 {
 	lhs->accept(this);
@@ -1487,8 +1487,8 @@ static bool try_print_increment(IR_TO_GLSL* vis, ir_assignment* ir)
 	return true;
 }
 
-void 
-IR_TO_GLSL::visit(ir_assignment *ir)
+void
+IR_TO_GLSL::visit(ir_assignment* ir)
 {
 	// if this is a loop induction variable initial assignment, and we aren't inside loop body:
 	 // do not print it (will be printed when inside loop body)
@@ -1497,7 +1497,7 @@ IR_TO_GLSL::visit(ir_assignment *ir)
 		ir_variable* whole_var = ir->whole_variable_written();
 		if (!ir->condition && whole_var)
 		{
-			ir_loop *lo = whole_var->as_loop();
+			ir_loop* lo = whole_var->as_loop();
 			if (lo)
 			{
 				loop_variable_state* inductor_state = loopstate->get(lo);
@@ -1570,7 +1570,7 @@ IR_TO_GLSL::visit(ir_assignment *ir)
 
 #define fpcheck(x) (isnan(x) || isinf(x))
 
-void 
+void
 print_float(sbuffer& str, float f)
 {
 	// Kind of roundabout way, but this is to satisfy two things:
@@ -1623,8 +1623,8 @@ print_float(sbuffer& str, float f)
 		str.append(".0");
 }
 
-void 
-IR_TO_GLSL::visit(ir_constant *ir)
+void
+IR_TO_GLSL::visit(ir_constant* ir)
 {
 	const glsl_type* type = ir->type;
 
@@ -1670,12 +1670,12 @@ IR_TO_GLSL::visit(ir_constant *ir)
 		return;
 	}
 
-	const glsl_type *const base_type = ir->type->get_base_type();
+	const glsl_type* const base_type = ir->type->get_base_type();
 
 	print_type(generated_source, type, true);
 	generated_source.append("(");
 
-	if (ir->type->is_array()) 
+	if (ir->type->is_array())
 	{
 		for (unsigned i = 0; i < ir->type->length; i++)
 		{
@@ -1687,7 +1687,7 @@ IR_TO_GLSL::visit(ir_constant *ir)
 	/*else if (ir->type->is_struct())
 	{
 		bool first = true;
-		foreach_in_list(ir_constant, inst, &ir->const_elements) 
+		foreach_in_list(ir_constant, inst, &ir->const_elements)
 		{
 			if (!first)
 				generated_source.append(", ");
@@ -1695,10 +1695,10 @@ IR_TO_GLSL::visit(ir_constant *ir)
 			inst->accept(this);
 		}
 	}*/
-	else 
+	else
 	{
 		bool first = true;
-		for (unsigned i = 0; i < ir->type->components(); i++) 
+		for (unsigned i = 0; i < ir->type->components(); i++)
 		{
 			if (!first)
 				generated_source.append(", ");
@@ -1733,7 +1733,7 @@ IR_TO_GLSL::visit(ir_constant *ir)
 }
 
 void
-IR_TO_GLSL::visit(ir_call *ir)
+IR_TO_GLSL::visit(ir_call* ir)
 {
 	if (this->mode != 0)
 	{
@@ -1763,11 +1763,11 @@ IR_TO_GLSL::visit(ir_call *ir)
 }
 
 void
-IR_TO_GLSL::visit(ir_return *ir)
+IR_TO_GLSL::visit(ir_return* ir)
 {
 	generated_source.append("return");
 
-	ir_rvalue *const value = ir->get_value();
+	ir_rvalue* const value = ir->get_value();
 	if (value)
 	{
 		generated_source.append(" ");
@@ -1776,7 +1776,7 @@ IR_TO_GLSL::visit(ir_return *ir)
 }
 
 void
-IR_TO_GLSL::visit(ir_discard *ir)
+IR_TO_GLSL::visit(ir_discard* ir)
 {
 	generated_source.append("discard");
 
@@ -1788,13 +1788,13 @@ IR_TO_GLSL::visit(ir_discard *ir)
 }
 
 void
-IR_TO_GLSL::visit(ir_demote *ir)
+IR_TO_GLSL::visit(ir_demote* ir)
 {
 	generated_source.append("(demote TODO)");
 }
 
 void
-IR_TO_GLSL::visit(ir_if *ir)
+IR_TO_GLSL::visit(ir_if* ir)
 {
 	generated_source.append("if (");
 	ir->condition->accept(this);
@@ -1804,7 +1804,7 @@ IR_TO_GLSL::visit(ir_if *ir)
 	indentation++; previous_skipped = false;
 
 	generated_source.append("{\n");
-	foreach_in_list(ir_instruction, inst, &ir->then_instructions) 
+	foreach_in_list(ir_instruction, inst, &ir->then_instructions)
 	{
 		indent();
 		inst->accept(this);
@@ -1823,21 +1823,21 @@ IR_TO_GLSL::visit(ir_if *ir)
 		indentation++; previous_skipped = false;
 
 		generated_source.append("{\n");
-		foreach_in_list(ir_instruction, inst, &ir->else_instructions) 
+		foreach_in_list(ir_instruction, inst, &ir->else_instructions)
 		{
 			indent();
 			inst->accept(this);
 			end_statement_line();
 		}
-		indentation--; 
+		indentation--;
 		indent();
 		generated_source.append("}\n");
 		skipped_this_ir = true;
 	}
 }
 
-bool 
-IR_TO_GLSL::can_emit_canonical_for(loop_variable_state *ls)
+bool
+IR_TO_GLSL::can_emit_canonical_for(loop_variable_state* ls)
 {
 	if (ls == NULL)
 		return false;
@@ -1856,7 +1856,7 @@ IR_TO_GLSL::can_emit_canonical_for(loop_variable_state *ls)
 	return true;
 }
 
-bool 
+bool
 IR_TO_GLSL::emit_canonical_for(ir_loop* ir)
 {
 	loop_variable_state* const ls = this->loopstate->get(ir);
@@ -1876,7 +1876,7 @@ IR_TO_GLSL::emit_canonical_for(ir_loop* ir)
 	{
 		foreach_in_list(loop_variable, indvar, &ls->induction_variables)
 		{
-			ir_loop *lo = indvar->var->as_loop();
+			ir_loop* lo = indvar->var->as_loop();
 			if (lo)
 			{
 				if (!this->loopstate->get(lo))
@@ -1924,8 +1924,8 @@ IR_TO_GLSL::emit_canonical_for(ir_loop* ir)
 			switch (term_expr->operation)
 			{
 			case ir_binop_less: termOp = "<"; break;
-			//case ir_binop_greater: termOp = ">"; break;
-			//case ir_binop_lequal: termOp = "<="; break;
+				//case ir_binop_greater: termOp = ">"; break;
+				//case ir_binop_lequal: termOp = "<="; break;
 			case ir_binop_gequal: termOp = ">="; break;
 			case ir_binop_equal: termOp = "=="; break;
 			case ir_binop_nequal: termOp = "!="; break;
@@ -1976,7 +1976,7 @@ IR_TO_GLSL::emit_canonical_for(ir_loop* ir)
 	inside_loop_body = false;
 
 	// emit loop body
-	foreach_in_list(ir_instruction, inst, &ir->body_instructions) 
+	foreach_in_list(ir_instruction, inst, &ir->body_instructions)
 	{
 		// skip termination & induction statements,
 		// they are part of "for" clause
@@ -2001,14 +2001,14 @@ IR_TO_GLSL::emit_canonical_for(ir_loop* ir)
 }
 
 void
-IR_TO_GLSL::visit(ir_loop *ir)
+IR_TO_GLSL::visit(ir_loop* ir)
 {
 	if (emit_canonical_for(ir))
 		return;
 
 	generated_source.append("while (true)\n{\n");
 	indentation++; previous_skipped = false;
-	foreach_in_list(ir_instruction, inst, &ir->body_instructions) 
+	foreach_in_list(ir_instruction, inst, &ir->body_instructions)
 	{
 		indent();
 		inst->accept(this);
@@ -2020,29 +2020,29 @@ IR_TO_GLSL::visit(ir_loop *ir)
 }
 
 void
-IR_TO_GLSL::visit(ir_loop_jump *ir)
+IR_TO_GLSL::visit(ir_loop_jump* ir)
 {
-   generated_source.append("%s", ir->is_break() ? "break" : "continue");
+	generated_source.append("%s", ir->is_break() ? "break" : "continue");
 }
 
 void
-IR_TO_GLSL::visit(ir_emit_vertex *ir)
+IR_TO_GLSL::visit(ir_emit_vertex* ir)
 {
-   generated_source.append("emit-vertex-TODO");
-   ir->stream->accept(this);
-   generated_source.append("\n");
+	generated_source.append("emit-vertex-TODO");
+	ir->stream->accept(this);
+	generated_source.append("\n");
 }
 
 void
-IR_TO_GLSL::visit(ir_end_primitive *ir)
+IR_TO_GLSL::visit(ir_end_primitive* ir)
 {
-   generated_source.append("end-primitive-TODO");
-   ir->stream->accept(this);
-   generated_source.append("\n");
+	generated_source.append("end-primitive-TODO");
+	ir->stream->accept(this);
+	generated_source.append("\n");
 }
 
 void
-IR_TO_GLSL::visit(ir_barrier *)
+IR_TO_GLSL::visit(ir_barrier*)
 {
-   generated_source.append("barrier-TODO\n");
+	generated_source.append("barrier-TODO\n");
 }
