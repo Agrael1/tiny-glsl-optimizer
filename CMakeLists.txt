@@ -56,7 +56,7 @@ add_library(GlslOptimizerV2 STATIC
 )
 set_target_properties(GlslOptimizerV2 PROPERTIES LINKER_LANGUAGE CXX)
 
-include_directories(
+target_include_directories(GlslOptimizerV2 PUBLIC
 		src
 		src/mesa
 		include
